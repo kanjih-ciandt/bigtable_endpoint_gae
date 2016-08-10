@@ -1,4 +1,4 @@
-package com.ciandt.poc;
+package com.ciandt.poc.beans;
 
 import java.util.Date;
 

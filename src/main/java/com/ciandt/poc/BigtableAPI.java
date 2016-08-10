@@ -1,10 +1,10 @@
 package com.ciandt.poc;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
-import org.apache.hadoop.hbase.util.Bytes;
-
+import com.ciandt.poc.beans.Response;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiClass;
 import com.google.api.server.spi.config.ApiMethod;
@@ -47,8 +47,8 @@ public class BigtableAPI {
 	}
 
 	@ApiMethod(httpMethod = HttpMethod.GET, path = "sample/findAll")
-	public Response findAll(@Nullable @Named("name") String name) {
-		return new Response("Hello " + (name != null ? name : "world"));
+	public List<String> findAllKeys(@Nullable @Named("table") String table) {
+		return new BigtableHelper().findAllKey(table);
 	}
 
 	@ApiMethod(httpMethod = HttpMethod.GET, path = "sample/findByKey")

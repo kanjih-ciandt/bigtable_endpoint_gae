@@ -1,6 +1,7 @@
 package com.ciandt.poc;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.google.cloud.bigtable.hbase.BigtableConfiguration;
@@ -151,7 +153,6 @@ public class BigtableHelper {
 			// writes
 			Table table = connection.getTable(TableName.valueOf(tableName));
 			table.put(put);
-			
 
 		} catch (IOException e) {
 			return e.toString();
@@ -196,7 +197,7 @@ public class BigtableHelper {
 
 	public String delateTable(String tableName) {
 		Long time = System.currentTimeMillis();
-		
+
 		try (Connection connection = BigtableConfiguration.connect(PROJECT_ID, INSTANCE_ID)) {
 
 			// The admin API lets us create, manage and delete tables
@@ -216,6 +217,32 @@ public class BigtableHelper {
 
 	public String insertData(String tableName, LinkedHashMap<String, Object> fields) {
 		return null;
+	}
+
+	public List<String> findAllKey(String tableName) {
+		List<String> list = new ArrayList<String>();
+		try (Connection connection = BigtableConfiguration.connect(PROJECT_ID, INSTANCE_ID)) {
+
+
+			Table table = connection.getTable(TableName.valueOf(tableName));
+			log.info("find keys");
+			Scan scan = new Scan();
+			scan.setFilter(new FirstKeyOnlyFilter());
+			ResultScanner scanner = table.getScanner(scan);
+		
+			for (Result row : scanner) {
+				byte[] key = row.getRow();
+				list.add(Bytes.toString(key));
+				log.info("key:" + (Bytes.toString(key)));
+				
+			}
+
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		return list;
+
 	}
 
 }
