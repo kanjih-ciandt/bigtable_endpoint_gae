@@ -1,6 +1,9 @@
 package com.ciandt.poc;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -32,7 +35,7 @@ public class BigtableHelper {
 
 	// Write some friendly greetings to Cloud Bigtable
 	private static final String[] GREETINGS = { "Hello World!", "Hello Cloud Bigtable!", "Hello HBase!" };
-	
+
 	public String allTasksBigtable() {
 		StringBuffer buffer = new StringBuffer();
 		// [START connecting_to_bigtable]
@@ -122,6 +125,95 @@ public class BigtableHelper {
 		return buffer.toString();
 	}
 
-	
+	public String createTable(String tableName, LinkedHashMap<String, Object> fields) {
+
+		Long time = System.currentTimeMillis();
+
+		String rowkey = (String) fields.get("row_key");
+		fields.remove("row_key");
+
+		HTableDescriptor descriptor = new HTableDescriptor(TableName.valueOf(tableName));
+
+		Put put = new Put(Bytes.toBytes(rowkey));
+
+		log.info("starting process fiedls");
+		this.process(descriptor, put, fields, null);
+
+		try (Connection connection = BigtableConfiguration.connect(PROJECT_ID, INSTANCE_ID)) {
+
+			Admin admin = connection.getAdmin();
+
+			log.info("Create table " + descriptor.getNameAsString());
+			admin.createTable(descriptor);
+
+			// [START writing_rows]
+			// Retrieve the table we just created so we can do some reads and
+			// writes
+			Table table = connection.getTable(TableName.valueOf(tableName));
+			table.put(put);
+			
+
+		} catch (IOException e) {
+			return e.toString();
+		}
+
+		return Long.toString(time - System.currentTimeMillis()) + "ms";
+
+	}
+
+	/**
+	 * 
+	 * @param put
+	 * @param fields
+	 * @param columnFamily
+	 */
+	@SuppressWarnings("unchecked")
+	private void process(HTableDescriptor descriptor, Put put, LinkedHashMap<String, Object> fields,
+			String columnFamily) {
+
+		Iterator<String> it = fields.keySet().iterator();
+
+		while (it.hasNext()) {
+
+			String element = it.next();
+			Object value = fields.get(element);
+
+			log.info("processing. field:" + element + "father:" + columnFamily);
+
+			if (value instanceof List) {
+				log.info("value:" + element + " has been ignored because it's a list");
+			} else if (value instanceof LinkedHashMap) {
+				log.info("value:" + element + " it's a LinkedHasmap");
+				descriptor.addFamily(new HColumnDescriptor(element));
+				this.process(descriptor, put, (LinkedHashMap<String, Object>) value, element);
+			} else if (columnFamily != null) {
+				log.info("column:" + element + " values:" + (String) value + " included in bigtable");
+				put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(element), Bytes.toBytes((String) value));
+			}
+		}
+
+	}
+
+	public String delateTable(String tableName) {
+		try (Connection connection = BigtableConfiguration.connect(PROJECT_ID, INSTANCE_ID)) {
+
+			// The admin API lets us create, manage and delete tables
+			Admin admin = connection.getAdmin();
+
+			Table table = connection.getTable(TableName.valueOf(tableName));
+			log.info("Delete the table");
+			admin.disableTable(table.getName());
+			admin.deleteTable(table.getName());
+
+		} catch (IOException e) {
+			return e.toString();
+		}
+
+		return "table created";
+	}
+
+	public String insertData(String tableName, LinkedHashMap<String, Object> fields) {
+		return null;
+	}
 
 }

@@ -18,21 +18,6 @@ public class BigtableAPI {
 
 	private static final Logger log = Logger.getLogger(BigtableAPI.class.getName());
 
-	// Refer to table metadata names by byte array in the HBase API
-	private static final byte[] TABLE_NAME = Bytes.toBytes("Hello-Bigtable");
-	private static final byte[] COLUMN_FAMILY_NAME = Bytes.toBytes("cf1");
-	private static final byte[] COLUMN_NAME = Bytes.toBytes("greeting");
-
-	private static String PROJECT_ID = "googl-cit-gcp";
-	private static String INSTANCE_ID = "poc-study";
-
-	// Write some friendly greetings to Cloud Bigtable
-	private static final String[] GREETINGS = { "Hello World!", "Hello Cloud Bigtable!", "Hello HBase!" };
-
-	BigtableHelper bigtableHelper;
-
-	
-
 	@ApiMethod(httpMethod = HttpMethod.GET)
 	public Response hello(@Nullable @Named("name") String name) {
 		return new Response("Hello " + (name != null ? name : "world"));
@@ -41,6 +26,12 @@ public class BigtableAPI {
 	@ApiMethod(httpMethod = HttpMethod.POST, path = "sample/create")
 	public Object createTable(@Nullable @Named("tableName") String tableName,
 			@Nullable LinkedHashMap<String, Object> column) {
+
+		return new Response(new BigtableHelper().createTable(tableName, column));
+	}
+	
+	@ApiMethod(httpMethod = HttpMethod.POST, path = "sample/allTask")
+	public Object allTask() {
 
 		return new Response(new BigtableHelper().allTasksBigtable());
 	}
