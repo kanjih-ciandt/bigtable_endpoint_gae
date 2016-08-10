@@ -2,7 +2,6 @@ package com.ciandt.poc;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.ciandt.poc.beans.Response;
 import com.google.api.server.spi.config.Api;
@@ -16,7 +15,7 @@ import com.google.api.server.spi.config.Nullable;
 @ApiClass(resource = "sample")
 public class BigtableAPI {
 
-	private static final Logger log = Logger.getLogger(BigtableAPI.class.getName());
+//	private static final Logger log = Logger.getLogger(BigtableAPI.class.getName());
 
 	
 
@@ -27,10 +26,17 @@ public class BigtableAPI {
 		return new Response(new BigtableHelper().createTable(tableName, column));
 	}
 	
+	@ApiMethod(httpMethod = HttpMethod.POST, path = "sample/upInsert")
+	public Object upInsertData(@Nullable @Named("tableName") String tableName,
+			@Nullable LinkedHashMap<String, Object> column) {
+
+		return new Response(new BigtableHelper().upInsertData(tableName, column));
+	}
+	
 	@ApiMethod(httpMethod = HttpMethod.POST, path = "sample/delete")
 	public Object deleteTable(@Nullable @Named("tableName") String tableName) {
 
-		return new Response(new BigtableHelper().delateTable(tableName));
+		return new Response(new BigtableHelper().deleteTable(tableName));
 	}
 	
 	@ApiMethod(httpMethod = HttpMethod.POST, path = "sample/allTask")

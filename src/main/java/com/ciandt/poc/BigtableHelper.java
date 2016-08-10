@@ -148,9 +148,6 @@ public class BigtableHelper {
 			log.info("Create table " + descriptor.getNameAsString());
 			admin.createTable(descriptor);
 
-			// [START writing_rows]
-			// Retrieve the table we just created so we can do some reads and
-			// writes
 			Table table = connection.getTable(TableName.valueOf(tableName));
 			table.put(put);
 
@@ -159,7 +156,32 @@ public class BigtableHelper {
 		}
 
 		return Long.toString(System.currentTimeMillis() - time) + "ms";
+	}
 
+	public String upInsertData(String tableName, LinkedHashMap<String, Object> fields) {
+
+		Long time = System.currentTimeMillis();
+
+		String rowkey = (String) fields.get("row_key");
+		fields.remove("row_key");
+
+		HTableDescriptor descriptor = new HTableDescriptor(TableName.valueOf(tableName));
+
+		Put put = new Put(Bytes.toBytes(rowkey));
+
+		log.info("update");
+		this.process(descriptor, put, fields, null);
+
+		try (Connection connection = BigtableConfiguration.connect(PROJECT_ID, INSTANCE_ID)) {
+			
+			Table table = connection.getTable(TableName.valueOf(tableName));
+			table.put(put);
+
+		} catch (IOException e) {
+			return e.toString();
+		}
+
+		return Long.toString(System.currentTimeMillis() - time) + "ms";
 	}
 
 	/**
@@ -195,7 +217,7 @@ public class BigtableHelper {
 
 	}
 
-	public String delateTable(String tableName) {
+	public String deleteTable(String tableName) {
 		Long time = System.currentTimeMillis();
 
 		try (Connection connection = BigtableConfiguration.connect(PROJECT_ID, INSTANCE_ID)) {
@@ -215,26 +237,23 @@ public class BigtableHelper {
 		return Long.toString(System.currentTimeMillis() - time) + "ms";
 	}
 
-	public String insertData(String tableName, LinkedHashMap<String, Object> fields) {
-		return null;
-	}
+	
 
 	public List<String> findAllKey(String tableName) {
 		List<String> list = new ArrayList<String>();
 		try (Connection connection = BigtableConfiguration.connect(PROJECT_ID, INSTANCE_ID)) {
-
 
 			Table table = connection.getTable(TableName.valueOf(tableName));
 			log.info("find keys");
 			Scan scan = new Scan();
 			scan.setFilter(new FirstKeyOnlyFilter());
 			ResultScanner scanner = table.getScanner(scan);
-		
+
 			for (Result row : scanner) {
 				byte[] key = row.getRow();
 				list.add(Bytes.toString(key));
 				log.info("key:" + (Bytes.toString(key)));
-				
+
 			}
 
 		} catch (IOException e) {
