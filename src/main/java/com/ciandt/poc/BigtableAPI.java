@@ -18,16 +18,19 @@ public class BigtableAPI {
 
 	private static final Logger log = Logger.getLogger(BigtableAPI.class.getName());
 
-	@ApiMethod(httpMethod = HttpMethod.GET)
-	public Response hello(@Nullable @Named("name") String name) {
-		return new Response("Hello " + (name != null ? name : "world"));
-	}
+	
 
 	@ApiMethod(httpMethod = HttpMethod.POST, path = "sample/create")
 	public Object createTable(@Nullable @Named("tableName") String tableName,
 			@Nullable LinkedHashMap<String, Object> column) {
 
 		return new Response(new BigtableHelper().createTable(tableName, column));
+	}
+	
+	@ApiMethod(httpMethod = HttpMethod.POST, path = "sample/delete")
+	public Object deleteTable(@Nullable @Named("tableName") String tableName) {
+
+		return new Response(new BigtableHelper().delateTable(tableName));
 	}
 	
 	@ApiMethod(httpMethod = HttpMethod.POST, path = "sample/allTask")

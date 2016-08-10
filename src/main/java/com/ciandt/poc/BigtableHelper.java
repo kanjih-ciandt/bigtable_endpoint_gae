@@ -157,7 +157,7 @@ public class BigtableHelper {
 			return e.toString();
 		}
 
-		return Long.toString(time - System.currentTimeMillis()) + "ms";
+		return Long.toString(System.currentTimeMillis() - time) + "ms";
 
 	}
 
@@ -195,6 +195,8 @@ public class BigtableHelper {
 	}
 
 	public String delateTable(String tableName) {
+		Long time = System.currentTimeMillis();
+		
 		try (Connection connection = BigtableConfiguration.connect(PROJECT_ID, INSTANCE_ID)) {
 
 			// The admin API lets us create, manage and delete tables
@@ -209,7 +211,7 @@ public class BigtableHelper {
 			return e.toString();
 		}
 
-		return "table created";
+		return Long.toString(System.currentTimeMillis() - time) + "ms";
 	}
 
 	public String insertData(String tableName, LinkedHashMap<String, Object> fields) {
